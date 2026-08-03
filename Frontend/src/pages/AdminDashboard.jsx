@@ -22,7 +22,7 @@ import {
 const emptyCourt = {
   name: "",
   description: "",
-  pricePerHour: 15,
+  pricePerHour: 10,
   openingTime: "08:00:00",
   closingTime: "23:00:00",
   isActive: true,
@@ -31,9 +31,9 @@ const emptyCourt = {
 const emptyOffer = {
   courtId: "",
   minimumHours: 2,
-  pricePerHour: 10,
+  pricePerHour: 8,
   startDate: new Date().toISOString().split("T")[0],
-  endDate: "2026-12-31",
+  endDate: "2027-12-31",
   isActive: true,
 };
 

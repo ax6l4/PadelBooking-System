@@ -69,6 +69,22 @@ export function formatTimeDisplay(timeStr) {
   return `${parts[0]}:${parts[1]}`;
 }
 
+/** عرض فترة الحجز حسب عدد الساعات — مثال: 12:00 — 13:00 أو 12:00 — 14:00 */
+export function formatSlotRange(startTime, numHours) {
+  const hours = Math.max(1, parseInt(numHours, 10) || 1);
+  const start = formatTimeDisplay(startTime);
+  const end = formatTimeDisplay(addHoursToTime(startTime, hours));
+  if (!start || !end) return start || "";
+  return `${start} — ${end}`;
+}
+
+/** تقدير السعر: ساعة = 10 ر.ع، أكثر من ساعة = 8 ر.ع لكل ساعة */
+export function estimateBookingPrice(numHours, basePrice = 10, multiHourPrice = 8) {
+  const hours = Math.max(1, parseInt(numHours, 10) || 1);
+  const rate = hours >= 2 ? multiHourPrice : basePrice;
+  return hours * rate;
+}
+
 export function addHoursToTime(startTime, hours) {
   const normalized = normalizeTime(startTime);
   const parts = normalized.split(":");

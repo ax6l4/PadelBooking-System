@@ -52,9 +52,7 @@ function CourtsBrowse() {
           أوقات متاحة من {formatTimeDisplay(summary.earliestOpen)} إلى {formatTimeDisplay(summary.latestClose)}
         </p>
         <p className="court-price">
-          {summary.minPrice === summary.maxPrice
-            ? `${summary.minPrice} ر.ع / ساعة`
-            : `من ${summary.minPrice} إلى ${summary.maxPrice} ر.ع / ساعة`}
+          ساعة واحدة: 10 ر.ع — أكثر من ساعة: 8 ر.ع لكل ساعة
         </p>
         <p className="court-desc court-note">
           سيتم تعيين ملعب متاح تلقائياً عند تأكيد الحجز — لا حاجة لاختيار ملعب محدد

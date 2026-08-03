@@ -34,25 +34,67 @@ public static class DbSeeder
 
         if (!db.Courts.Any())
         {
-            db.Courts.Add(new Court
+            var court1 = new Court
             {
                 Name = "ملعب 1",
                 Description = "ملعب بادل داخلي مكيف",
-                PricePerHour = 15,
+                PricePerHour = 10,
                 OpeningTime = new TimeSpan(8, 0, 0),
                 ClosingTime = new TimeSpan(23, 0, 0),
                 IsActive = true
-            });
+            };
 
-            db.Courts.Add(new Court
+            var court2 = new Court
             {
                 Name = "ملعب 2",
                 Description = "ملعب بادل خارجي",
-                PricePerHour = 20,
+                PricePerHour = 10,
                 OpeningTime = new TimeSpan(8, 0, 0),
                 ClosingTime = new TimeSpan(23, 0, 0),
                 IsActive = true
-            });
+            };
+
+            var court3 = new Court
+            {
+                Name = "ملعب VIP",
+                Description = "ملعب فاخر",
+                PricePerHour = 10,
+                OpeningTime = new TimeSpan(9, 0, 0),
+                ClosingTime = new TimeSpan(22, 0, 0),
+                IsActive = true
+            };
+
+            db.Courts.AddRange(court1, court2, court3);
+            db.SaveChanges();
+
+            // عرض: ساعتان فأكثر = 8 ر.ع للساعة
+            foreach (var court in new[] { court1, court2, court3 })
+            {
+                db.Offers.Add(new Offer
+                {
+                    CourtId = court.Id,
+                    MinimumHours = 2,
+                    PricePerHour = 8,
+                    StartDate = new DateTime(2026, 1, 1),
+                    EndDate = new DateTime(2027, 12, 31),
+                    IsActive = true
+                });
+            }
+        }
+        else if (!db.Offers.Any())
+        {
+            foreach (var court in db.Courts.Where(c => c.IsActive).ToList())
+            {
+                db.Offers.Add(new Offer
+                {
+                    CourtId = court.Id,
+                    MinimumHours = 2,
+                    PricePerHour = 8,
+                    StartDate = new DateTime(2026, 1, 1),
+                    EndDate = new DateTime(2027, 12, 31),
+                    IsActive = true
+                });
+            }
         }
 
         db.SaveChanges();

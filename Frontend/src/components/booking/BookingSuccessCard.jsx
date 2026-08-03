@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { formatDateDisplay, formatTimeDisplay } from "../../utils/helpers";
+import { formatDateDisplay, formatTimeDisplay, formatSlotRange } from "../../utils/helpers";
 
 function getPaymentLabel(method) {
   if (method === "Thawani") return "الدفع الإلكتروني Thawani";
@@ -52,7 +52,8 @@ function BookingSuccessCard({ confirmation, onNewBooking }) {
         <div className="booking-success-detail">
           <span className="booking-success-label">الوقت</span>
           <span className="booking-success-value">
-            {formatTimeDisplay(startTime)} — {formatTimeDisplay(endTime)}
+            {formatSlotRange(startTime, totalHours) ||
+              `${formatTimeDisplay(startTime)} — ${formatTimeDisplay(endTime)}`}
           </span>
         </div>
         <div className="booking-success-detail">

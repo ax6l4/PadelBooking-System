@@ -705,6 +705,32 @@ body:has(.demo-banner) .auth-page {
   box-shadow: 0 0 0 3px rgba(255, 90, 54, 0.12);
 }
 
+.booking-price-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--light);
+  border: 1px solid #e5e9ef;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 8px 0 20px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.booking-price-box strong {
+  color: var(--orange);
+  font-size: 1.1rem;
+}
+
+.booking-price-box small {
+  color: var(--gray);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
 .payment-section {
   margin-top: 28px;
   padding-top: 24px;

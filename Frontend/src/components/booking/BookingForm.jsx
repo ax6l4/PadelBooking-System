@@ -6,6 +6,8 @@ import BookingSuccessCard from "./BookingSuccessCard";
 import {
   addHoursToTime,
   formatTimeDisplay,
+  formatSlotRange,
+  estimateBookingPrice,
   getAvailableStartTimes,
   getSelectableStartTimes,
   getDateRange,
@@ -75,6 +77,9 @@ function BookingForm() {
     () => selectableStarts.filter((s) => s.available),
     [selectableStarts]
   );
+
+  const estimatedPrice = estimateBookingPrice(numHours);
+  const pricePerHour = numHours >= 2 ? 8 : 10;
 
   useEffect(() => {
     const user = getStoredUser();
@@ -261,13 +266,19 @@ function BookingForm() {
           <label htmlFor="hours">عدد الساعات</label>
           <select id="hours" value={hours} onChange={(e) => setHours(e.target.value)} required>
             {[1, 2, 3, 4, 5, 6].map((h) => (
-              <option key={h} value={h}>{h === 1 ? "ساعة واحدة" : h === 2 ? "ساعتان" : `${h} ساعات`}</option>
+              <option key={h} value={h}>
+                {h === 1
+                  ? "ساعة واحدة — 10 ر.ع"
+                  : h === 2
+                    ? `ساعتان — ${estimateBookingPrice(h)} ر.ع`
+                    : `${h} ساعات — ${estimateBookingPrice(h)} ر.ع`}
+              </option>
             ))}
           </select>
         </div>
 
         <div className="form-field form-field-full">
-          <label htmlFor="startTime">وقت البداية</label>
+          <label htmlFor="startTime">وقت الحجز</label>
           <select
             id="startTime"
             value={startTime}
@@ -280,7 +291,7 @@ function BookingForm() {
                 ? "جاري التحميل..."
                 : availableStarts.length === 0
                   ? "لا توجد أوقات متاحة"
-                  : "اختر الوقت"}
+                  : "اختر الفترة الزمنية"}
             </option>
             {selectableStarts.map((slot) => (
               <option
@@ -288,16 +299,27 @@ function BookingForm() {
                 value={slot.startTime}
                 disabled={!slot.available}
               >
-                {formatTimeDisplay(slot.startTime)}
+                {formatSlotRange(slot.startTime, numHours)}
                 {slot.available ? "" : " — غير متاح"}
               </option>
             ))}
           </select>
-          {date && !loadingSlots && selectableStarts.some((s) => !s.available) && (
+          {date && !loadingSlots && (
             <p className="form-desc" style={{ marginTop: 8, marginBottom: 0 }}>
-              الأوقات المكتوب عليها «غير متاح» محجوزة بالكامل في هذا التوقيت.
+              {numHours === 1
+                ? "مثال: اختيار 12:00 يعني الحجز من 12:00 إلى 13:00"
+                : `عند اختيار ${numHours} ساعات تظهر الفترة كاملة (مثل 12:00 — ${String(12 + numHours).padStart(2, "0")}:00)`}
+              {selectableStarts.some((s) => !s.available) ? " — الأوقات «غير متاح» محجوزة بالكامل." : ""}
             </p>
           )}
+        </div>
+
+        <div className="booking-price-box">
+          <span>السعر المتوقع</span>
+          <strong>
+            {estimatedPrice} ر.ع
+            <small> ({pricePerHour} ر.ع × {numHours === 1 ? "ساعة" : `${numHours} ساعات`})</small>
+          </strong>
         </div>
 
         <div className="form-field">
