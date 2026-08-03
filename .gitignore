@@ -1,0 +1,103 @@
+# ============================================
+# Padel Booking System — .gitignore
+# ============================================
+
+# --------------------------------------------
+# Frontend (React / Vite)
+# --------------------------------------------
+Frontend/node_modules/
+Frontend/dist/
+Frontend/dist-ssr/
+
+# Environment variables (keep .env.example if added later)
+Frontend/.env
+Frontend/.env.*
+!Frontend/.env.example
+
+# Frontend logs and cache
+Frontend/logs/
+Frontend/*.log
+Frontend/npm-debug.log*
+Frontend/yarn-debug.log*
+Frontend/yarn-error.log*
+Frontend/pnpm-debug.log*
+Frontend/.vite/
+
+# --------------------------------------------
+# Backend (.NET / ASP.NET Core)
+# --------------------------------------------
+Backend/**/bin/
+Backend/**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# User secrets
+Backend/**/secrets.json
+**/Properties/launchSettings.json.user
+
+# Build and publish output
+Backend/**/publish/
+Backend/**/out/
+artifacts/
+
+# ASP.NET Core / .NET temporary files
+Backend/**/*.*proj.user
+Backend/**/*.DotSettings.user
+Backend/**/appsettings.*.local.json
+Backend/**/appsettings.local.json
+
+# Test results
+Backend/**/TestResults/
+Backend/**/*.trx
+Backend/**/*.coverage
+Backend/**/*.coveragexml
+
+# --------------------------------------------
+# Database (SQLite — local dev, auto-created)
+# --------------------------------------------
+Backend/**/*.db
+Backend/**/*.db-shm
+Backend/**/*.db-wal
+Backend/**/*.sqlite
+Backend/**/*.sqlite3
+
+# --------------------------------------------
+# IDE and Editor
+# --------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# --------------------------------------------
+# OS generated files
+# --------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# --------------------------------------------
+# Logs (root level)
+# --------------------------------------------
+*.log
+
+# --------------------------------------------
+# Misc temporary files
+# --------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.cache
