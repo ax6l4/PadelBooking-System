@@ -862,6 +862,25 @@ body:has(.demo-banner) .auth-page {
   font-size: 1.25rem;
 }
 
+.thawani-card-form {
+  text-align: right;
+  margin-top: 8px;
+}
+
+.thawani-card-form .form-field {
+  margin-bottom: 14px;
+}
+
+.thawani-card-row {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.thawani-card-form .btn {
+  margin-top: 8px;
+}
+
 /* ===== Admin Dashboard ===== */
 .admin-layout {
   display: flex;

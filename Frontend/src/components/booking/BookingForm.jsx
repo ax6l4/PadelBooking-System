@@ -78,9 +78,6 @@ function BookingForm() {
     [selectableStarts]
   );
 
-  const estimatedPrice = estimateBookingPrice(numHours);
-  const pricePerHour = numHours >= 2 ? 8 : 10;
-
   useEffect(() => {
     const user = getStoredUser();
     if (user) {
@@ -312,14 +309,6 @@ function BookingForm() {
               {selectableStarts.some((s) => !s.available) ? " — الأوقات «غير متاح» محجوزة بالكامل." : ""}
             </p>
           )}
-        </div>
-
-        <div className="booking-price-box">
-          <span>السعر المتوقع</span>
-          <strong>
-            {estimatedPrice} ر.ع
-            <small> ({pricePerHour} ر.ع × {numHours === 1 ? "ساعة" : `${numHours} ساعات`})</small>
-          </strong>
         </div>
 
         <div className="form-field">
