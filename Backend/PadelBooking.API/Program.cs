@@ -19,13 +19,28 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     });
 
-// CORS for Frontend (Vite dev server)
+// CORS — allow configured frontend origins (demo: Vite dev + preview)
+var allowedOrigins = builder.Configuration
+    .GetSection("Frontend:AllowedOrigins")
+    .Get<string[]>() ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+    {
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
+        else
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
+    });
 });
 
 
@@ -66,8 +81,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors();
 
-// Skip HTTPS redirect in development so Vite proxy can reach the API
-if (!app.Environment.IsDevelopment())
+if (builder.Configuration.GetValue("UseHttpsRedirection", false))
 {
     app.UseHttpsRedirection();
 }

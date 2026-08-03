@@ -21,8 +21,14 @@ public class ThawaniService
     {
         var apiKey = _config["Thawani:SecretKey"];
         var baseUrl = _config["Thawani:BaseUrl"] ?? "https://uatcheckout.thawani.om/api/v1";
-        var successUrl = _config["Thawani:SuccessUrl"] ?? "http://localhost:5173/payment/callback";
-        var cancelUrl = _config["Thawani:CancelUrl"] ?? "http://localhost:5173/booking";
+        var frontendBase = _config["Frontend:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+        var successUrl = _config["Thawani:SuccessUrl"];
+        if (string.IsNullOrWhiteSpace(successUrl))
+            successUrl = $"{frontendBase}/payment/callback";
+
+        var cancelUrl = _config["Thawani:CancelUrl"];
+        if (string.IsNullOrWhiteSpace(cancelUrl))
+            cancelUrl = $"{frontendBase}/booking";
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
