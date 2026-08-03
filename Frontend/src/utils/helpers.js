@@ -84,11 +84,18 @@ export function getHourFromTime(timeStr) {
 }
 
 export function getAvailableStartTimes(slots, numHours = 1) {
+  return getSelectableStartTimes(slots, numHours).filter((s) => s.available);
+}
+
+/** كل أوقات البداية مع حالة التوفر (لعرض «متاح / غير متاح») */
+export function getSelectableStartTimes(slots, numHours = 1) {
   const normalizedSlots = normalizeSlots(slots);
   if (!normalizedSlots.length || numHours < 1) return [];
-
-  // الـ API يتحقق مسبقاً من وجود ملعب واحد يغطي كامل المدة
-  return normalizedSlots.filter((slot) => slot.available);
+  return normalizedSlots.map((slot) => ({
+    startTime: slot.startTime,
+    endTime: slot.endTime,
+    available: !!slot.available,
+  }));
 }
 
 export function formatLocalDate(d) {

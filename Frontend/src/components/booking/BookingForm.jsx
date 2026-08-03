@@ -7,6 +7,7 @@ import {
   addHoursToTime,
   formatTimeDisplay,
   getAvailableStartTimes,
+  getSelectableStartTimes,
   getDateRange,
   getErrorMessage,
   intersectMultiDayStartTimes,
@@ -57,11 +58,23 @@ function BookingForm() {
   const numHours = parseInt(hours, 10);
   const isMultiDay = endDate && endDate !== date;
 
-  const availableStarts = useMemo(() => {
+  const selectableStarts = useMemo(() => {
     if (!slotsByDay.length) return [];
-    if (isMultiDay) return intersectMultiDayStartTimes(slotsByDay, numHours);
-    return getAvailableStartTimes(slotsByDay[0], numHours);
+    if (isMultiDay) {
+      const available = intersectMultiDayStartTimes(slotsByDay, numHours);
+      const availableSet = new Set(available.map((s) => s.startTime));
+      return getSelectableStartTimes(slotsByDay[0], numHours).map((slot) => ({
+        ...slot,
+        available: availableSet.has(slot.startTime),
+      }));
+    }
+    return getSelectableStartTimes(slotsByDay[0], numHours);
   }, [slotsByDay, numHours, isMultiDay]);
+
+  const availableStarts = useMemo(
+    () => selectableStarts.filter((s) => s.available),
+    [selectableStarts]
+  );
 
   useEffect(() => {
     const user = getStoredUser();
@@ -260,17 +273,31 @@ function BookingForm() {
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
             required
-            disabled={!date || loadingSlots || availableStarts.length === 0}
+            disabled={!date || loadingSlots || selectableStarts.length === 0}
           >
             <option value="">
-              {loadingSlots ? "جاري التحميل..." : availableStarts.length === 0 ? "لا توجد أوقات متاحة" : "اختر الوقت"}
+              {loadingSlots
+                ? "جاري التحميل..."
+                : availableStarts.length === 0
+                  ? "لا توجد أوقات متاحة"
+                  : "اختر الوقت"}
             </option>
-            {availableStarts.map((slot) => (
-              <option key={slot.startTime} value={slot.startTime}>
+            {selectableStarts.map((slot) => (
+              <option
+                key={slot.startTime}
+                value={slot.startTime}
+                disabled={!slot.available}
+              >
                 {formatTimeDisplay(slot.startTime)}
+                {slot.available ? "" : " — غير متاح"}
               </option>
             ))}
           </select>
+          {date && !loadingSlots && selectableStarts.some((s) => !s.available) && (
+            <p className="form-desc" style={{ marginTop: 8, marginBottom: 0 }}>
+              الأوقات المكتوب عليها «غير متاح» محجوزة بالكامل في هذا التوقيت.
+            </p>
+          )}
         </div>
 
         <div className="form-field">

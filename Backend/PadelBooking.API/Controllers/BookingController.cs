@@ -168,7 +168,7 @@ public class BookingController : ControllerBase
                 courts, workingHours, closures, bookings);
 
             if (selectedCourt == null)
-                return BadRequest($"لا يوجد ملعب متاح في {day:yyyy-MM-dd} للوقت المحدد");
+                return BadRequest("الوقت غير متاح — جميع الملاعب محجوزة في هذا التوقيت");
 
             var price = BookingHelper.CalculatePrice(
                 selectedCourt, totalHours, day, offers);

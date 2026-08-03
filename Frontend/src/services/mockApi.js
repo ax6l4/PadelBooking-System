@@ -86,25 +86,28 @@ function getCourtHours(court, dayOfWeek, workingHours) {
   };
 }
 
+function hasBookingConflict(courtId, dateStr, startHour, endHour, bookings) {
+  const cid = Number(courtId);
+  return bookings.some((b) => {
+    if (Number(b.courtId) !== cid) return false;
+    if (parseDateOnly(b.bookingDate) !== dateStr) return false;
+    const status = String(b.status || "");
+    if (status === "Cancelled" || status === "2") return false;
+    const bStart = timeToHour(b.startTime);
+    const bEnd = timeToHour(b.endTime);
+    return bStart < endHour && bEnd > startHour;
+  });
+}
+
 function isCourtClosed(courtId, dateStr, startHour, endHour, closures) {
+  const cid = Number(courtId);
   return closures.some((c) => {
-    if (c.courtId !== courtId) return false;
+    if (Number(c.courtId) !== cid) return false;
     if (parseDateOnly(c.date) !== dateStr) return false;
     if (!c.startTime && !c.endTime) return true;
     const cStart = timeToHour(c.startTime);
     const cEnd = timeToHour(c.endTime);
     return cStart < endHour && cEnd > startHour;
-  });
-}
-
-function hasBookingConflict(courtId, dateStr, startHour, endHour, bookings) {
-  return bookings.some((b) => {
-    if (b.courtId !== courtId) return false;
-    if (parseDateOnly(b.bookingDate) !== dateStr) return false;
-    if (b.status === "Cancelled") return false;
-    const bStart = timeToHour(b.startTime);
-    const bEnd = timeToHour(b.endTime);
-    return bStart < endHour && bEnd > startHour;
   });
 }
 
@@ -347,7 +350,7 @@ export async function mockRequest(config) {
         const court = pickAvailableCourt(dayStr, startHour, endHour, store);
         if (!court) {
           throw new MockError(
-            `لا يوجد ملعب متاح في ${dayStr} للوقت المحدد`
+            "الوقت غير متاح — جميع الملاعب محجوزة في هذا التوقيت"
           );
         }
 
