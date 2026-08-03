@@ -3,6 +3,16 @@ import { Link, useSearchParams } from "react-router-dom";
 import { paymentService } from "../services/paymentService";
 import { getErrorMessage } from "../utils/helpers";
 
+function parseBookingIds(raw) {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 function PaymentCallback() {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState("loading");
@@ -16,8 +26,7 @@ function PaymentCallback() {
         ? urlPaymentId
         : storedPaymentId;
 
-    const bookingIdsRaw = sessionStorage.getItem("pendingBookingIds");
-    const bookingIds = bookingIdsRaw ? JSON.parse(bookingIdsRaw) : null;
+    const bookingIds = parseBookingIds(sessionStorage.getItem("pendingBookingIds"));
 
     if (!paymentId) {
       setStatus("error");

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getStoredUser, logoutUser } from "../utils/auth";
+import { isAdmin } from "../utils/helpers";
 
 function Navbar({ variant = "hero" }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -38,7 +39,9 @@ function Navbar({ variant = "hero" }) {
         <Link to="/" onClick={() => setMenuOpen(false)}>الرئيسية</Link>
         <Link to="/#courts" onClick={() => setMenuOpen(false)}>الملاعب</Link>
         <Link to="/booking" onClick={() => setMenuOpen(false)}>الحجز</Link>
-        <Link to="/admin" onClick={() => setMenuOpen(false)}>لوحة التحكم</Link>
+        {(user && isAdmin(user)) && (
+          <Link to="/admin" onClick={() => setMenuOpen(false)}>لوحة التحكم</Link>
+        )}
         {user ? (
           <>
             <span className="nav-user">{user.name}</span>

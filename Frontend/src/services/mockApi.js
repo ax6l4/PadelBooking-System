@@ -4,6 +4,7 @@ import {
   loadStore,
   saveStore,
 } from "../data/mockStore";
+import { formatLocalDate } from "../utils/helpers";
 
 class MockError extends Error {
   constructor(message, status = 400, data = message) {
@@ -35,7 +36,11 @@ function parseRoute(config) {
     const u = new URL(url);
     url = u.pathname + u.search;
   }
-  const path = url.replace(/^\/api\/?/, "").replace(/^\//, "").split("?")[0];
+  const path = url
+    .replace(/^\/demo-api\/?/, "")
+    .replace(/^\/api\/?/, "")
+    .replace(/^\//, "")
+    .split("?")[0];
   const segments = path.split("/").filter(Boolean);
   return { segments, params: config.params || {} };
 }
@@ -65,10 +70,9 @@ function getCourtHours(court, dayOfWeek, workingHours) {
     (w) => w.courtId === court.id && w.dayOfWeek === dayOfWeek
   );
   if (custom) {
-    return {
-      open: timeToHour(custom.startTime),
-      close: timeToHour(custom.endTime),
-    };
+    const open = timeToHour(custom.startTime);
+    const close = timeToHour(custom.endTime);
+    if (close > open) return { open, close };
   }
   return {
     open: timeToHour(court.openingTime),
@@ -159,7 +163,7 @@ function enrichPayment(p, store) {
 function getAvailableTimes(dateParam, store) {
   const dateStr = parseDateOnly(dateParam);
   const now = new Date();
-  const todayStr = now.toISOString().split("T")[0];
+  const todayStr = formatLocalDate(now);
 
   if (dateStr < todayStr) {
     throw new MockError("لا يمكن الحجز في تاريخ سابق");
@@ -185,9 +189,13 @@ function getAvailableTimes(dateParam, store) {
     const startTime = hourToTime(hour);
     const endTime = hourToTime(hour + 1);
 
-    if (dateStr === todayStr && hour <= now.getHours()) {
-      slots.push({ startTime, endTime, available: false });
-      continue;
+    if (dateStr === todayStr) {
+      const slotStart = hour * 60;
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      if (slotStart <= nowMinutes) {
+        slots.push({ startTime, endTime, available: false });
+        continue;
+      }
     }
 
     const available = activeCourts.some((c) =>
@@ -294,16 +302,39 @@ export async function mockRequest(config) {
       const activeCourts = store.courts.filter((c) => c.isActive);
       if (!activeCourts.length) throw new MockError("لا توجد ملاعب متاحة");
 
+      const todayStr = formatLocalDate(new Date());
+      const now = new Date();
+
       const saved = [];
       let totalPrice = 0;
       let current = new Date(startDate + "T12:00:00");
 
-      while (current.toISOString().split("T")[0] <= endDate) {
-        const dayStr = current.toISOString().split("T")[0];
+      while (formatLocalDate(current) <= endDate) {
+        const dayStr = formatLocalDate(current);
+
+        if (dayStr < todayStr) {
+          throw new MockError("لا يمكن الحجز في تاريخ سابق");
+        }
+        if (dayStr === todayStr) {
+          const startMinutes = startHour * 60;
+          const nowMinutes = now.getHours() * 60 + now.getMinutes();
+          if (startMinutes <= nowMinutes) {
+            throw new MockError("لا يمكن حجز وقت مضى");
+          }
+        }
+
         const court = pickAvailableCourt(dayStr, startHour, endHour, store);
         if (!court) {
           throw new MockError(
             `لا يوجد ملعب متاح في ${dayStr} للوقت المحدد`
+          );
+        }
+
+        if (
+          !isCourtAvailable(court, dayStr, startHour, endHour, store)
+        ) {
+          throw new MockError(
+            `الوقت المحدد لم يعد متاحاً في ${dayStr}`
           );
         }
         const price = calculatePrice(court, totalHours, dayStr, store.offers);
@@ -372,9 +403,17 @@ export async function mockRequest(config) {
       const amount = data.amount ?? booking.totalPrice;
 
       if (data.paymentMethod === "PayAtVenue") {
+        const idsToConfirm =
+          data.bookingIds?.length > 0 ? data.bookingIds : [data.bookingId];
+        idsToConfirm.forEach((bid) => {
+          const b = store.bookings.find((x) => x.id === bid);
+          if (b) b.status = "Confirmed";
+        });
+
         const payment = {
           id: paymentId,
           bookingId: booking.id,
+          bookingIds: data.bookingIds?.length ? data.bookingIds : [data.bookingId],
           amount,
           paymentMethod: "PayAtVenue",
           status: "Pending",
@@ -385,10 +424,11 @@ export async function mockRequest(config) {
         saveStore(store);
         return {
           data: {
-            message: "تم اختيار الدفع عند الوصول (Cash)",
+            message: "تم تأكيد الحجز — الدفع عند الوصول",
             paymentId,
             amount,
             status: "Pending",
+            bookingConfirmed: true,
           },
         };
       }
@@ -397,6 +437,7 @@ export async function mockRequest(config) {
         const payment = {
           id: paymentId,
           bookingId: booking.id,
+          bookingIds: data.bookingIds?.length ? data.bookingIds : [data.bookingId],
           amount,
           paymentMethod: "Thawani",
           status: "Pending",
@@ -433,7 +474,10 @@ export async function mockRequest(config) {
         ? String(bookingIdsParam)
             .split(",")
             .map((x) => parseInt(x.trim(), 10))
-        : [payment.bookingId];
+            .filter((x) => !Number.isNaN(x))
+        : payment.bookingIds?.length
+          ? payment.bookingIds
+          : [payment.bookingId];
 
       ids.forEach((bid) => {
         const b = store.bookings.find((x) => x.id === bid);
@@ -566,7 +610,7 @@ export async function mockRequest(config) {
       const endDate = new Date(endStr + "T12:00:00");
 
       while (current <= endDate) {
-        const dayStr = current.toISOString().split("T")[0];
+        const dayStr = formatLocalDate(current);
         const dow = current.getDay();
         if (!weekdays || weekdays.includes(dow)) {
           ids.forEach((courtId) => {

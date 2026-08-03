@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
+import { getStoredUser } from "../utils/auth";
+import { isAdmin } from "../utils/helpers";
 
 function Footer() {
+  const user = getStoredUser();
+
   return (
     <footer className="footer">
       <div className="footer-inner">
@@ -11,7 +15,7 @@ function Footer() {
         <div className="footer-links">
           <Link to="/">الرئيسية</Link>
           <Link to="/booking">الحجز</Link>
-          <Link to="/admin">لوحة التحكم</Link>
+          {user && isAdmin(user) && <Link to="/admin">لوحة التحكم</Link>}
           <Link to="/login">تسجيل الدخول</Link>
           <Link to="/register">إنشاء حساب</Link>
         </div>

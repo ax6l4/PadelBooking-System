@@ -55,14 +55,27 @@ public class PaymentController : ControllerBase
         {
             payment.Status = PaymentStatus.Pending;
             _context.Payments.Add(payment);
+
+            var idsToConfirm = request.BookingIds?.Count > 0
+                ? request.BookingIds
+                : new List<int> { request.BookingId };
+
+            var bookingsToConfirm = await _context.Bookings
+                .Where(b => idsToConfirm.Contains(b.Id))
+                .ToListAsync();
+
+            foreach (var b in bookingsToConfirm)
+                b.Status = BookingStatus.Confirmed;
+
             await _context.SaveChangesAsync();
 
             return Ok(new
             {
-                message = "تم اختيار الدفع عند الوصول (Cash)",
+                message = "تم تأكيد الحجز — الدفع عند الوصول",
                 paymentId = payment.Id,
                 amount = payment.Amount,
-                status = payment.Status
+                status = payment.Status,
+                bookingConfirmed = true
             });
         }
 
@@ -147,6 +160,7 @@ public class PaymentController : ControllerBase
 public class CreatePaymentRequest
 {
     public int BookingId { get; set; }
+    public List<int>? BookingIds { get; set; }
     public PaymentMethod PaymentMethod { get; set; }
     public decimal? Amount { get; set; }
 }

@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { userService } from "../services/userService";
 import { saveUser } from "../utils/auth";
 import { getErrorMessage, isAdmin } from "../utils/helpers";
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = location.state?.from || null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,7 @@ function Login() {
       saveUser(res.data);
 
       if (isAdmin(res.data)) {
-        navigate("/admin");
+        navigate(redirectTo || "/admin");
       } else {
         navigate("/booking");
       }

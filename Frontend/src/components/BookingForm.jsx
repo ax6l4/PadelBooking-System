@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { bookingService } from "../services/bookingService";
 import { paymentService } from "../services/paymentService";
@@ -8,8 +8,11 @@ import {
   formatDateDisplay,
   formatTimeDisplay,
   getAvailableStartTimes,
+  getDateRange,
   getErrorMessage,
+  intersectMultiDayStartTimes,
   normalizeSlots,
+  getTodayLocal,
   toApiDate,
 } from "../utils/helpers";
 import { getStoredUser } from "../utils/auth";
@@ -24,13 +27,20 @@ function BookingForm() {
   const [email, setEmail] = useState("");
   const [payment, setPayment] = useState("PayAtVenue");
 
-  const [slots, setSlots] = useState([]);
+  const [slotsByDay, setSlotsByDay] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [confirmation, setConfirmation] = useState(null);
 
-  const availableStarts = getAvailableStartTimes(slots, parseInt(hours, 10));
+  const numHours = parseInt(hours, 10);
+  const isMultiDay = endDate && endDate !== date;
+
+  const availableStarts = useMemo(() => {
+    if (!slotsByDay.length) return [];
+    if (isMultiDay) return intersectMultiDayStartTimes(slotsByDay, numHours);
+    return getAvailableStartTimes(slotsByDay[0], numHours);
+  }, [slotsByDay, numHours, isMultiDay]);
 
   useEffect(() => {
     const user = getStoredUser();
@@ -43,7 +53,7 @@ function BookingForm() {
 
   useEffect(() => {
     if (!date) {
-      setSlots([]);
+      setSlotsByDay([]);
       setStartTime("");
       return;
     }
@@ -54,38 +64,44 @@ function BookingForm() {
       setStartTime("");
 
       try {
-        const res = await bookingService.getAvailableTimes(toApiDate(date));
-        const normalized = normalizeSlots(res.data);
-        setSlots(normalized);
+        const range = getDateRange(date, endDate || date);
+        const responses = await Promise.all(
+          range.map((d) => bookingService.getAvailableTimes(toApiDate(d)))
+        );
+        const normalized = responses.map((r) => normalizeSlots(r.data));
+        setSlotsByDay(normalized);
 
-        if (!normalized.some((s) => s.available)) {
-          try {
-            const courtsRes = await courtService.getAll();
-            if (!courtsRes.data?.length) {
-              setError("لا توجد ملاعب مسجلة. أضف ملاعباً من لوحة الإدارة (/admin) أولاً");
-            } else {
-              setError("لا توجد أوقات متاحة في هذا التاريخ");
-            }
-          } catch {
-            setError("لا توجد أوقات متاحة");
+        const starts =
+          range.length > 1
+            ? intersectMultiDayStartTimes(normalized, numHours)
+            : getAvailableStartTimes(normalized[0], numHours);
+
+        if (!starts.length) {
+          const courtsRes = await courtService.getAll();
+          if (!courtsRes.data?.length) {
+            setError("لا توجد ملاعب مسجلة حالياً");
+          } else if (range.length > 1) {
+            setError("لا توجد أوقات متاحة لجميع الأيام المحددة");
+          } else {
+            setError("لا توجد أوقات متاحة في هذا التاريخ");
           }
         }
       } catch (err) {
         setError(getErrorMessage(err, "حدث خطأ أثناء جلب الأوقات"));
-        setSlots([]);
+        setSlotsByDay([]);
       } finally {
         setLoadingSlots(false);
       }
     }
 
     loadSlots();
-  }, [date]);
+  }, [date, endDate, hours]);
 
   useEffect(() => {
     if (startTime && !availableStarts.some((s) => s.startTime === startTime)) {
       setStartTime("");
     }
-  }, [hours, availableStarts, startTime]);
+  }, [availableStarts, startTime]);
 
   async function processPayment(bookingRes, paymentMethod) {
     const bookingIds = bookingRes.data.bookingIds || [bookingRes.data.bookingId];
@@ -93,6 +109,7 @@ function BookingForm() {
 
     const paymentRes = await paymentService.create({
       bookingId: bookingRes.data.bookingId,
+      bookingIds,
       paymentMethod,
       amount: totalPrice,
     });
@@ -104,7 +121,6 @@ function BookingForm() {
       return null;
     }
 
-    await paymentService.confirm(paymentRes.data.paymentId, bookingIds);
     return paymentRes.data;
   }
 
@@ -114,7 +130,12 @@ function BookingForm() {
     setSubmitting(true);
 
     try {
-      const numHours = parseInt(hours, 10);
+      if (endDate && endDate < date) {
+        setError("تاريخ النهاية يجب أن يكون بعد تاريخ البداية");
+        setSubmitting(false);
+        return;
+      }
+
       const endTime = addHoursToTime(startTime, numHours);
 
       const bookingRes = await bookingService.create({
@@ -129,12 +150,18 @@ function BookingForm() {
       });
 
       const paymentResult = await processPayment(bookingRes, payment);
-      if (paymentResult === null) return;
+      if (paymentResult === null) {
+        setSubmitting(false);
+        return;
+      }
 
       setConfirmation({
         ...bookingRes.data,
-        paymentType: "PayAtVenue",
-        message: "تم الحجز بنجاح",
+        paymentType: payment,
+        message:
+          payment === "PayAtVenue"
+            ? "تم تأكيد حجزك — الدفع عند الوصول"
+            : "تم إنشاء الحجز بنجاح",
       });
     } catch (err) {
       setError(getErrorMessage(err, "حدث خطأ أثناء الحجز"));
@@ -178,7 +205,7 @@ function BookingForm() {
   return (
     <form className="form-card" onSubmit={handleSubmit}>
       <h2>حجز ملعب</h2>
-      <p className="form-desc">لا حاجة لحساب — أدخل رقم هاتفك فقط</p>
+      <p className="form-desc">لا حاجة لحساب — أدخل رقم هاتفك فقط. سيتم تعيين ملعب متاح تلقائياً.</p>
 
       {error && <p className="form-alert form-alert-error">{error}</p>}
       {loadingSlots && <p className="form-alert">جاري تحميل الأوقات المتاحة...</p>}
@@ -190,19 +217,22 @@ function BookingForm() {
             id="date"
             type="date"
             value={date}
-            min={new Date().toISOString().split("T")[0]}
-            onChange={(e) => setDate(e.target.value)}
+            min={getTodayLocal()}
+            onChange={(e) => {
+              setDate(e.target.value);
+              if (endDate && endDate < e.target.value) setEndDate("");
+            }}
             required
           />
         </div>
 
         <div className="form-field">
-          <label htmlFor="endDate">تاريخ النهاية (اختياري)</label>
+          <label htmlFor="endDate">تاريخ النهاية (اختياري — حجز متعدد الأيام)</label>
           <input
             id="endDate"
             type="date"
             value={endDate}
-            min={date || new Date().toISOString().split("T")[0]}
+            min={date || getTodayLocal()}
             onChange={(e) => setEndDate(e.target.value)}
           />
         </div>

@@ -60,6 +60,8 @@ function AdminDashboard() {
     selectedCourtIds: [],
     startDate: "",
     endDate: "",
+    startTime: "",
+    endTime: "",
     weekdays: [],
     reason: "",
   });
@@ -69,6 +71,7 @@ function AdminDashboard() {
     startTime: "08:00",
     endTime: "23:00",
   });
+  const [editingWhId, setEditingWhId] = useState(null);
 
   const [showCourtForm, setShowCourtForm] = useState(false);
   const [courtForm, setCourtForm] = useState(emptyCourt);
@@ -129,6 +132,7 @@ function AdminDashboard() {
       if (section === "courts") await loadCourts();
       if (section === "bookings") {
         await loadCourts();
+        await loadPayments();
         await loadBookings();
       }
       if (section === "offers") {
@@ -317,10 +321,12 @@ function AdminDashboard() {
         reason: closureForm.reason,
         courtIds,
         weekdays: closureForm.weekdays.length ? closureForm.weekdays.map(Number) : null,
+        startTime: closureForm.startTime ? `${closureForm.startTime}:00` : null,
+        endTime: closureForm.endTime ? `${closureForm.endTime}:00` : null,
       };
       await closureService.createBulk(payload);
       showSuccess("تم إغلاق الملاعب بنجاح");
-      setClosureForm({ courtIds: "all", selectedCourtIds: [], startDate: "", endDate: "", weekdays: [], reason: "" });
+      setClosureForm({ courtIds: "all", selectedCourtIds: [], startDate: "", endDate: "", startTime: "", endTime: "", weekdays: [], reason: "" });
       await loadClosures();
     } catch (err) {
       setError(getErrorMessage(err, "حدث خطأ أثناء الإغلاق"));
@@ -342,17 +348,45 @@ function AdminDashboard() {
     e.preventDefault();
     setError("");
     try {
-      await workingHourService.create({
+      const payload = {
         courtId: parseInt(whForm.courtId, 10),
         dayOfWeek: parseInt(whForm.dayOfWeek, 10),
         startTime: `${whForm.startTime}:00`,
         endTime: `${whForm.endTime}:00`,
-      });
-      showSuccess("تم حفظ وقت العمل");
+      };
+      if (editingWhId) {
+        await workingHourService.update(editingWhId, payload);
+        showSuccess("تم تعديل وقت العمل");
+        setEditingWhId(null);
+      } else {
+        await workingHourService.create(payload);
+        showSuccess("تم حفظ وقت العمل");
+      }
+      setWhForm({ courtId: "", dayOfWeek: 0, startTime: "08:00", endTime: "23:00" });
       await loadWorkingHours();
     } catch (err) {
       setError(getErrorMessage(err, "حدث خطأ"));
     }
+  }
+
+  function openEditWorkingHour(wh) {
+    setWhForm({
+      courtId: String(wh.courtId),
+      dayOfWeek: wh.dayOfWeek,
+      startTime: formatTimeDisplay(wh.startTime),
+      endTime: formatTimeDisplay(wh.endTime),
+    });
+    setEditingWhId(wh.id);
+  }
+
+  function getBookingPaymentStatus(bookingId) {
+    const payment = payments.find(
+      (p) =>
+        p.bookingId === bookingId ||
+        (Array.isArray(p.bookingIds) && p.bookingIds.includes(bookingId))
+    );
+    if (!payment) return "—";
+    return paymentStatusLabel[payment.status] ?? payment.status;
   }
 
   async function deleteWorkingHour(id) {
@@ -489,7 +523,7 @@ function AdminDashboard() {
             )}
 
             <div className="admin-table-wrap">
-              {courts.length === 0 ? (
+              {loading ? null : courts.length === 0 ? (
                 <p className="admin-empty">لا توجد ملاعب — اضغط «إضافة ملعب» للبدء</p>
               ) : (
                 <table className="admin-table">
@@ -553,7 +587,7 @@ function AdminDashboard() {
               </button>
             </div>
             <div className="admin-table-wrap">
-              {filteredBookings.length === 0 ? (
+              {loading ? null : filteredBookings.length === 0 ? (
                 <p className="admin-empty">لا توجد حجوزات</p>
               ) : (
                 <table className="admin-table">
@@ -561,13 +595,16 @@ function AdminDashboard() {
                     <tr>
                       <th>#</th>
                       <th>الملعب</th>
+                      <th>الاسم</th>
                       <th>الهاتف</th>
+                      <th>البريد</th>
                       <th>التاريخ</th>
                       <th>الوقت</th>
                       <th>الساعات</th>
                       <th>المبلغ</th>
-                      <th>الحالة</th>
-                      <th>الدفع</th>
+                      <th>حالة الحجز</th>
+                      <th>طريقة الدفع</th>
+                      <th>حالة الدفع</th>
                       <th>إجراءات</th>
                     </tr>
                   </thead>
@@ -576,13 +613,16 @@ function AdminDashboard() {
                       <tr key={b.id}>
                         <td>{b.id}</td>
                         <td>{b.court?.name || `#${b.courtId}`}</td>
+                        <td>{b.customerName || "—"}</td>
                         <td>{b.phone}</td>
+                        <td>{b.customerEmail || "—"}</td>
                         <td>{formatBookingDate(b.bookingDate)}</td>
-                        <td>{formatTimeDisplay(b.startTime)}</td>
+                        <td>{formatTimeDisplay(b.startTime)} - {formatTimeDisplay(b.endTime)}</td>
                         <td>{b.totalHours}</td>
                         <td>{b.totalPrice} ر.ع</td>
                         <td>{bookingStatusLabel[b.status] ?? b.status}</td>
                         <td>{paymentMethodLabel[b.paymentMethod] ?? b.paymentMethod}</td>
+                        <td>{getBookingPaymentStatus(b.id)}</td>
                         <td className="actions">
                           {b.status !== 2 && b.status !== "Cancelled" && (
                             <button type="button" className="danger" onClick={() => cancelBooking(b.id)}>إلغاء</button>
@@ -656,7 +696,7 @@ function AdminDashboard() {
             )}
 
             <div className="admin-cards">
-              {offers.length === 0 ? (
+              {loading ? null : offers.length === 0 ? (
                 <p className="admin-empty">لا توجد عروض</p>
               ) : (
                 offers.map((offer) => (
@@ -681,7 +721,7 @@ function AdminDashboard() {
           <div className="admin-section">
             <div className="admin-header"><h1>أوقات العمل</h1></div>
             <form className="admin-form-panel" onSubmit={saveWorkingHour}>
-              <h2>إضافة وقت عمل لملعب</h2>
+              <h2>{editingWhId ? "تعديل وقت عمل" : "إضافة وقت عمل لملعب"}</h2>
               <div className="form-grid">
                 <div className="form-field">
                   <label>الملعب</label>
@@ -705,10 +745,17 @@ function AdminDashboard() {
                   <input type="time" value={whForm.endTime} onChange={(e) => setWhForm({ ...whForm, endTime: e.target.value })} required />
                 </div>
               </div>
-              <button type="submit" className="btn btn-primary">حفظ</button>
+              <div className="admin-form-actions">
+                <button type="submit" className="btn btn-primary">{editingWhId ? "تحديث" : "حفظ"}</button>
+                {editingWhId && (
+                  <button type="button" className="btn btn-outline-dark" onClick={() => { setEditingWhId(null); setWhForm({ courtId: "", dayOfWeek: 0, startTime: "08:00", endTime: "23:00" }); }}>
+                    إلغاء
+                  </button>
+                )}
+              </div>
             </form>
             <div className="admin-table-wrap">
-              {workingHours.length === 0 ? (
+              {loading ? null : workingHours.length === 0 ? (
                 <p className="admin-empty">لا توجد أوقات عمل مخصصة — يُستخدم وقت الفتح/الإغلاق الافتراضي</p>
               ) : (
                 <table className="admin-table">
@@ -720,7 +767,10 @@ function AdminDashboard() {
                         <td>{dayNames[wh.dayOfWeek]}</td>
                         <td>{formatTimeDisplay(wh.startTime)}</td>
                         <td>{formatTimeDisplay(wh.endTime)}</td>
-                        <td><button type="button" className="danger" onClick={() => deleteWorkingHour(wh.id)}>حذف</button></td>
+                        <td className="actions">
+                          <button type="button" onClick={() => openEditWorkingHour(wh)}>تعديل</button>
+                          <button type="button" className="danger" onClick={() => deleteWorkingHour(wh.id)}>حذف</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -799,6 +849,14 @@ function AdminDashboard() {
                   <label>إلى تاريخ</label>
                   <input type="date" value={closureForm.endDate} onChange={(e) => setClosureForm({ ...closureForm, endDate: e.target.value })} />
                 </div>
+                <div className="form-field">
+                  <label>من وقت (اختياري — إغلاق جزئي)</label>
+                  <input type="time" value={closureForm.startTime} onChange={(e) => setClosureForm({ ...closureForm, startTime: e.target.value })} />
+                </div>
+                <div className="form-field">
+                  <label>إلى وقت (اختياري)</label>
+                  <input type="time" value={closureForm.endTime} onChange={(e) => setClosureForm({ ...closureForm, endTime: e.target.value })} />
+                </div>
                 <div className="form-field form-field-full">
                   <label>السبب</label>
                   <input value={closureForm.reason} onChange={(e) => setClosureForm({ ...closureForm, reason: e.target.value })} placeholder="صيانة، مناسبة..." />
@@ -807,16 +865,21 @@ function AdminDashboard() {
               <button type="submit" className="btn btn-primary">تطبيق الإغلاق</button>
             </form>
             <div className="admin-table-wrap">
-              {closures.length === 0 ? (
+              {loading ? null : closures.length === 0 ? (
                 <p className="admin-empty">لا توجد إغلاقات</p>
               ) : (
                 <table className="admin-table">
-                  <thead><tr><th>الملعب</th><th>التاريخ</th><th>السبب</th><th>إجراء</th></tr></thead>
+                  <thead><tr><th>الملعب</th><th>التاريخ</th><th>الوقت</th><th>السبب</th><th>إجراء</th></tr></thead>
                   <tbody>
                     {closures.map((c) => (
                       <tr key={c.id}>
                         <td>{c.court?.name || c.courtId}</td>
                         <td>{formatBookingDate(c.date)}</td>
+                        <td>
+                          {c.startTime && c.endTime
+                            ? `${formatTimeDisplay(c.startTime)} - ${formatTimeDisplay(c.endTime)}`
+                            : "يوم كامل"}
+                        </td>
                         <td>{c.reason || "—"}</td>
                         <td><button type="button" className="danger" onClick={() => deleteClosure(c.id)}>حذف</button></td>
                       </tr>
@@ -834,7 +897,7 @@ function AdminDashboard() {
               <h1>الدفع</h1>
             </div>
             <div className="admin-table-wrap">
-              {payments.length === 0 ? (
+              {loading ? null : payments.length === 0 ? (
                 <p className="admin-empty">لا توجد عمليات دفع</p>
               ) : (
                 <table className="admin-table">

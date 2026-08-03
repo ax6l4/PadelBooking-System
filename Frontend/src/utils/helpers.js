@@ -137,8 +137,46 @@ export function getAvailableStartTimes(slots, numHours) {
       if (!hourSlot?.available) return false;
     }
 
-    return startHour + numHours <= 23;
+    const maxEndHour = Math.max(
+      ...normalizedSlots.map((s) => getHourFromTime(s.endTime))
+    );
+    return startHour + numHours <= maxEndHour;
   });
+}
+
+export function formatLocalDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+export function getTodayLocal() {
+  return formatLocalDate(new Date());
+}
+
+export function getDateRange(startDateStr, endDateStr) {
+  if (!startDateStr) return [];
+  const dates = [];
+  const start = new Date(`${startDateStr}T12:00:00`);
+  const end = new Date(`${endDateStr || startDateStr}T12:00:00`);
+  const cur = new Date(start);
+  while (cur <= end) {
+    dates.push(formatLocalDate(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return dates;
+}
+
+export function intersectMultiDayStartTimes(slotsByDay, numHours) {
+  if (!slotsByDay.length) return [];
+  let result = getAvailableStartTimes(slotsByDay[0], numHours);
+  for (let i = 1; i < slotsByDay.length; i++) {
+    const dayStarts = getAvailableStartTimes(slotsByDay[i], numHours);
+    const dayStartSet = new Set(dayStarts.map((s) => s.startTime));
+    result = result.filter((s) => dayStartSet.has(s.startTime));
+  }
+  return result;
 }
 
 export function toApiDate(dateStr) {
