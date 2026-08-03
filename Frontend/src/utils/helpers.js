@@ -37,6 +37,8 @@ export const paymentStatusLabel = {
   Failed: "فشل",
 };
 
+import { isDemoMode } from "../config/demo";
+
 export function isAdmin(user) {
   if (!user) return false;
   return user.role === "Admin" || user.role === 1;
@@ -52,7 +54,11 @@ export function getErrorMessage(error, fallback = "حدث خطأ") {
     if (messages.length) return messages.join(" — ");
   }
   if (Array.isArray(data?.errors)) return data.errors.join(" ");
-  if (!error?.response) return "تعذر الاتصال بالخادم — تأكد أن Backend يعمل";
+  if (!error?.response) {
+    return isDemoMode
+      ? "حدث خطأ — يرجى المحاولة مرة أخرى"
+      : "تعذر الاتصال بالخادم";
+  }
   return fallback;
 }
 

@@ -3,11 +3,20 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const apiTarget = env.VITE_API_PROXY_TARGET || "http://localhost:5104";
+  const isDemoMode = env.VITE_DEMO_MODE !== "false";
 
-  return {
+  const config = {
     plugins: [react()],
-    server: {
+    preview: {
+      port: 4173,
+      strictPort: false,
+    },
+  };
+
+  // Proxy only when explicitly using a real backend
+  if (!isDemoMode) {
+    const apiTarget = env.VITE_API_PROXY_TARGET || "http://localhost:5104";
+    config.server = {
       proxy: {
         "/api": {
           target: apiTarget,
@@ -15,10 +24,8 @@ export default defineConfig(({ mode }) => {
           secure: false,
         },
       },
-    },
-    preview: {
-      port: 4173,
-      strictPort: true,
-    },
-  };
+    };
+  }
+
+  return config;
 });

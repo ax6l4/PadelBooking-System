@@ -145,7 +145,7 @@ function AdminDashboard() {
         await loadWorkingHours();
       }
     } catch (err) {
-      setError(getErrorMessage(err, "حدث خطأ أثناء تحميل البيانات — تأكد أن Backend يعمل"));
+      setError(getErrorMessage(err, "حدث خطأ أثناء تحميل البيانات"));
     } finally {
       setLoading(false);
     }

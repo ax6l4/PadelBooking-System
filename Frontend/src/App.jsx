@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import DemoBanner from "./components/DemoBanner";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -9,6 +10,7 @@ import PaymentCallback from "./pages/PaymentCallback";
 function App() {
   return (
     <BrowserRouter>
+      <DemoBanner />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

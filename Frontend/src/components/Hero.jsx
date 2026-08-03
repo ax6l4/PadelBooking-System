@@ -8,6 +8,9 @@ function Hero() {
         src={badelImage}
         className="hero-image"
         alt="لاعب بادل"
+        width="1920"
+        height="1080"
+        decoding="async"
       />
       <div className="hero-overlay" />
 

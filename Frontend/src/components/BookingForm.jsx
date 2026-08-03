@@ -71,7 +71,7 @@ function BookingForm() {
           }
         }
       } catch (err) {
-        setError(getErrorMessage(err, "حدث خطأ أثناء جلب الأوقات — تأكد أن Backend يعمل"));
+        setError(getErrorMessage(err, "حدث خطأ أثناء جلب الأوقات"));
         setSlots([]);
       } finally {
         setLoadingSlots(false);
