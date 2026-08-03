@@ -32,6 +32,26 @@ function BookingForm() {
   const [error, setError] = useState("");
   const [confirmation, setConfirmation] = useState(null);
 
+  function resetForm() {
+    setConfirmation(null);
+    setDate("");
+    setEndDate("");
+    setStartTime("");
+    setHours("1");
+    setPayment("PayAtVenue");
+    setSlotsByDay([]);
+    setLoadingSlots(false);
+    setSubmitting(false);
+    setError("");
+
+    const user = getStoredUser();
+    setPhone(user?.phone || "");
+    setName(user?.name || "");
+    setEmail(user?.email || "");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   const numHours = parseInt(hours, 10);
   const isMultiDay = endDate && endDate !== date;
 
@@ -182,7 +202,7 @@ function BookingForm() {
   if (confirmation) {
     return (
       <div className="form-card">
-        <BookingSuccessCard confirmation={confirmation} />
+        <BookingSuccessCard confirmation={confirmation} onNewBooking={resetForm} />
       </div>
     );
   }

@@ -13,7 +13,7 @@ function formatReference(bookingIds, bookingId) {
   return ids.map((id) => `#${id}`).join(" — ");
 }
 
-function BookingSuccessCard({ confirmation }) {
+function BookingSuccessCard({ confirmation, onNewBooking }) {
   const {
     bookingId,
     bookingIds,
@@ -89,9 +89,15 @@ function BookingSuccessCard({ confirmation }) {
         <Link to="/" className="btn btn-primary btn-full">
           العودة للرئيسية
         </Link>
-        <Link to="/booking" className="btn btn-outline-dark btn-full">
-          حجز جديد
-        </Link>
+        {onNewBooking ? (
+          <button type="button" className="btn btn-outline-dark btn-full" onClick={onNewBooking}>
+            حجز جديد
+          </button>
+        ) : (
+          <Link to="/booking" className="btn btn-outline-dark btn-full">
+            حجز جديد
+          </Link>
+        )}
       </div>
     </div>
   );
