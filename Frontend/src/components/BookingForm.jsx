@@ -31,6 +31,7 @@ function BookingForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [confirmation, setConfirmation] = useState(null);
+  const [formResetKey, setFormResetKey] = useState(0);
 
   function resetForm() {
     setConfirmation(null);
@@ -43,6 +44,7 @@ function BookingForm() {
     setLoadingSlots(false);
     setSubmitting(false);
     setError("");
+    setFormResetKey((k) => k + 1);
 
     const user = getStoredUser();
     setPhone(user?.phone || "");
@@ -208,7 +210,7 @@ function BookingForm() {
   }
 
   return (
-    <form className="form-card" onSubmit={handleSubmit}>
+    <form key={formResetKey} className="form-card" onSubmit={handleSubmit}>
       <h2>حجز ملعب</h2>
       <p className="form-desc">لا حاجة لحساب — أدخل رقم هاتفك فقط. سيتم تعيين ملعب متاح تلقائياً.</p>
 

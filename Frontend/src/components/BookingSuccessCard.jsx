@@ -39,8 +39,8 @@ function BookingSuccessCard({ confirmation, onNewBooking }) {
             <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h2 className="booking-success-title">تم الحجز بنجاح ✅</h2>
-        <p className="booking-success-lead">شكراً لك، تم تأكيد حجزك.</p>
+        <h2 className="booking-success-title">شكراً لك، تم الحجز بنجاح ✅</h2>
+        <p className="booking-success-lead">تم تأكيد حجزك بنجاح.</p>
         <p className="booking-success-note">سيتم التواصل معك عند الحاجة.</p>
       </div>
 
@@ -86,18 +86,18 @@ function BookingSuccessCard({ confirmation, onNewBooking }) {
       )}
 
       <div className="booking-success-actions">
-        <Link to="/" className="btn btn-primary btn-full">
-          العودة للرئيسية
-        </Link>
         {onNewBooking ? (
-          <button type="button" className="btn btn-outline-dark btn-full" onClick={onNewBooking}>
+          <button type="button" className="btn btn-primary btn-full" onClick={onNewBooking}>
             حجز جديد
           </button>
         ) : (
-          <Link to="/booking" className="btn btn-outline-dark btn-full">
+          <Link to="/booking" className="btn btn-primary btn-full">
             حجز جديد
           </Link>
         )}
+        <Link to="/" className="btn btn-outline-dark btn-full">
+          العودة للرئيسية
+        </Link>
       </div>
     </div>
   );
