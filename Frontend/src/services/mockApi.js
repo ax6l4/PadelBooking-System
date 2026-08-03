@@ -14,6 +14,12 @@ class MockError extends Error {
   }
 }
 
+function omitPassword(user) {
+  const safe = { ...user };
+  delete safe.password;
+  return safe;
+}
+
 const STATUS_BY_NUM = {
   0: "Pending",
   1: "Confirmed",
@@ -271,7 +277,14 @@ export async function mockRequest(config) {
       return { data: store.courts[idx] };
     }
     if (method === "delete" && idOrAction) {
-      store.courts = store.courts.filter((c) => c.id !== parseInt(idOrAction, 10));
+      const courtId = parseInt(idOrAction, 10);
+      const hasBookings = store.bookings.some(
+        (b) => b.courtId === courtId && b.status !== "Cancelled"
+      );
+      if (hasBookings) {
+        throw new MockError("لا يمكن حذف الملعب — يوجد حجوزات مرتبطة به");
+      }
+      store.courts = store.courts.filter((c) => c.id !== courtId);
       saveStore(store);
       return { data: "تم الحذف" };
     }
@@ -521,8 +534,7 @@ export async function mockRequest(config) {
       };
       store.users.push(user);
       saveStore(store);
-      const { password: _, ...safe } = user;
-      return { data: safe };
+      return { data: omitPassword(user) };
     }
     if (method === "post" && idOrAction === "login") {
       const user = store.users.find(
@@ -531,11 +543,10 @@ export async function mockRequest(config) {
       if (!user) {
         throw new MockError("البريد أو كلمة المرور غير صحيحة", 401);
       }
-      const { password: _, ...safe } = user;
-      return { data: safe };
+      return { data: omitPassword(user) };
     }
     if (method === "get") {
-      const users = store.users.map(({ password: _, ...u }) => u);
+      const users = store.users.map(omitPassword);
       return { data: users };
     }
   }

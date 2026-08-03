@@ -11,6 +11,17 @@ function Navbar({ variant = "hero" }) {
 
   useEffect(() => {
     setUser(getStoredUser());
+
+    function syncUser() {
+      setUser(getStoredUser());
+    }
+
+    window.addEventListener("storage", syncUser);
+    window.addEventListener("padel-auth-change", syncUser);
+    return () => {
+      window.removeEventListener("storage", syncUser);
+      window.removeEventListener("padel-auth-change", syncUser);
+    };
   }, []);
 
   function handleLogout() {

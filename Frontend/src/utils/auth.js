@@ -9,8 +9,10 @@ export function getStoredUser() {
 
 export function saveUser(user) {
   localStorage.setItem("user", JSON.stringify(user));
+  window.dispatchEvent(new Event("padel-auth-change"));
 }
 
 export function logoutUser() {
   localStorage.removeItem("user");
+  window.dispatchEvent(new Event("padel-auth-change"));
 }

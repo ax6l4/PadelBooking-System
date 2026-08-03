@@ -1,9 +1,15 @@
-import { Link } from "react-router-dom";
-import { getStoredUser } from "../utils/auth";
+import { Link, useNavigate } from "react-router-dom";
+import { getStoredUser, logoutUser } from "../utils/auth";
 import { isAdmin } from "../utils/helpers";
 
 function Footer() {
   const user = getStoredUser();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logoutUser();
+    navigate("/");
+  }
 
   return (
     <footer className="footer">
@@ -16,8 +22,16 @@ function Footer() {
           <Link to="/">الرئيسية</Link>
           <Link to="/booking">الحجز</Link>
           {user && isAdmin(user) && <Link to="/admin">لوحة التحكم</Link>}
-          <Link to="/login">تسجيل الدخول</Link>
-          <Link to="/register">إنشاء حساب</Link>
+          {user ? (
+            <button type="button" className="footer-link-btn" onClick={handleLogout}>
+              خروج ({user.name})
+            </button>
+          ) : (
+            <>
+              <Link to="/login">تسجيل الدخول</Link>
+              <Link to="/register">إنشاء حساب</Link>
+            </>
+          )}
         </div>
       </div>
       <p className="footer-copy">© 2026 Padel Booking. جميع الحقوق محفوظة.</p>
