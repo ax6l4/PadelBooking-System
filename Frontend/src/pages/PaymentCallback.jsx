@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import BookingSuccessCard from "../components/BookingSuccessCard";
+import { BookingSuccessCard } from "../components/booking";
 import { paymentService } from "../services/paymentService";
 import { getErrorMessage } from "../utils/helpers";
 

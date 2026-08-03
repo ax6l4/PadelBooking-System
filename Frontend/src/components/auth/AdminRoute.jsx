@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
-import { getStoredUser } from "../utils/auth";
-import { isAdmin } from "../utils/helpers";
+import { getStoredUser } from "../../utils/auth";
+import { isAdmin } from "../../utils/helpers";
 
 function AdminRoute({ children }) {
   const user = getStoredUser();

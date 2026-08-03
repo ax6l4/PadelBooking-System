@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PadelBooking.API.Data;
+using PadelBooking.API.DTOs;
 using PadelBooking.API.Models;
 using PadelBooking.API.Services;
 
@@ -155,12 +156,4 @@ public class PaymentController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok("تم تسجيل فشل الدفع");
     }
-}
-
-public class CreatePaymentRequest
-{
-    public int BookingId { get; set; }
-    public List<int>? BookingIds { get; set; }
-    public PaymentMethod PaymentMethod { get; set; }
-    public decimal? Amount { get; set; }
 }

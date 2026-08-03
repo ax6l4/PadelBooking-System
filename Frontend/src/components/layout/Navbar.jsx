@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getStoredUser, logoutUser } from "../utils/auth";
-import { isAdmin } from "../utils/helpers";
+import { getStoredUser, logoutUser } from "../../utils/auth";
+import { isAdmin } from "../../utils/helpers";
 
 function Navbar({ variant = "hero" }) {
   const [menuOpen, setMenuOpen] = useState(false);

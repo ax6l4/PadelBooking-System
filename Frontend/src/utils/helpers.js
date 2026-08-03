@@ -1,43 +1,6 @@
-export const PaymentMethod = {
-  PayAtVenue: 0,
-  Thawani: 1,
-};
-
-export const BookingStatus = {
-  Pending: 0,
-  Confirmed: 1,
-  Cancelled: 2,
-  Completed: 3,
-};
-
-export const bookingStatusLabel = {
-  0: "قيد الانتظار",
-  1: "مؤكد",
-  2: "ملغي",
-  3: "مكتمل",
-  Pending: "قيد الانتظار",
-  Confirmed: "مؤكد",
-  Cancelled: "ملغي",
-  Completed: "مكتمل",
-};
-
-export const paymentMethodLabel = {
-  0: "الدفع عند الوصول",
-  1: "Thawani",
-  PayAtVenue: "الدفع عند الوصول",
-  Thawani: "Thawani",
-};
-
-export const paymentStatusLabel = {
-  0: "قيد الانتظار",
-  1: "مدفوع",
-  2: "فشل",
-  Pending: "قيد الانتظار",
-  Paid: "مدفوع",
-  Failed: "فشل",
-};
-
 import { isDemoMode } from "../config/demo";
+
+export * from "./constants";
 
 export function isAdmin(user) {
   if (!user) return false;
@@ -120,28 +83,12 @@ export function getHourFromTime(timeStr) {
   return parseInt(normalized.split(":")[0], 10);
 }
 
-export function getAvailableStartTimes(slots, numHours) {
+export function getAvailableStartTimes(slots, numHours = 1) {
   const normalizedSlots = normalizeSlots(slots);
   if (!normalizedSlots.length || numHours < 1) return [];
 
-  return normalizedSlots.filter((slot) => {
-    if (!slot.available) return false;
-
-    const startHour = getHourFromTime(slot.startTime);
-
-    for (let i = 0; i < numHours; i++) {
-      const targetHour = startHour + i;
-      const hourSlot = normalizedSlots.find(
-        (s) => getHourFromTime(s.startTime) === targetHour
-      );
-      if (!hourSlot?.available) return false;
-    }
-
-    const maxEndHour = Math.max(
-      ...normalizedSlots.map((s) => getHourFromTime(s.endTime))
-    );
-    return startHour + numHours <= maxEndHour;
-  });
+  // الـ API يتحقق مسبقاً من وجود ملعب واحد يغطي كامل المدة
+  return normalizedSlots.filter((slot) => slot.available);
 }
 
 export function formatLocalDate(d) {

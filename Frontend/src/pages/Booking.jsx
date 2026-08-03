@@ -1,7 +1,6 @@
 import { useLocation } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import BookingForm from "../components/BookingForm";
-import Footer from "../components/Footer";
+import { Navbar, Footer } from "../components/layout";
+import { BookingForm } from "../components/booking";
 
 function Booking() {
   const location = useLocation();

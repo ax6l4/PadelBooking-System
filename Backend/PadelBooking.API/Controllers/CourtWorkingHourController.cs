@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PadelBooking.API.Data;
+using PadelBooking.API.DTOs;
 using PadelBooking.API.Models;
 
 namespace PadelBooking.API.Controllers;

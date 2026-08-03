@@ -1,4 +1,6 @@
-namespace PadelBooking.API.Models;
+using PadelBooking.API.Models;
+
+namespace PadelBooking.API.DTOs;
 
 public class CourtSummaryDto
 {

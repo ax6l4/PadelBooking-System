@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { courtService } from "../services/courtService";
-import { getErrorMessage, formatTimeDisplay } from "../utils/helpers";
+import { courtService } from "../../services/courtService";
+import { getErrorMessage, formatTimeDisplay } from "../../utils/helpers";
 
 function CourtsBrowse() {
   const [summary, setSummary] = useState(null);

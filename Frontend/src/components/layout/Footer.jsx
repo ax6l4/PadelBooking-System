@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { getStoredUser, logoutUser } from "../utils/auth";
-import { isAdmin } from "../utils/helpers";
+import { getStoredUser, logoutUser } from "../../utils/auth";
+import { isAdmin } from "../../utils/helpers";
 
 function Footer() {
   const user = getStoredUser();

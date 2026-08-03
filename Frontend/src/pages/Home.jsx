@@ -1,7 +1,5 @@
-import Navbar from "../components/Navbar";
-import Hero from "../components/Hero";
-import Footer from "../components/Footer";
-import CourtsBrowse from "../components/CourtsBrowse";
+import { Navbar, Hero, Footer } from "../components/layout";
+import { CourtsBrowse } from "../components/booking";
 
 function Home() {
   return (

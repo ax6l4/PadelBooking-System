@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { bookingService } from "../services/bookingService";
-import { paymentService } from "../services/paymentService";
-import { courtService } from "../services/courtService";
+import { bookingService } from "../../services/bookingService";
+import { paymentService } from "../../services/paymentService";
+import { courtService } from "../../services/courtService";
 import BookingSuccessCard from "./BookingSuccessCard";
 import {
   addHoursToTime,
@@ -13,8 +13,8 @@ import {
   normalizeSlots,
   getTodayLocal,
   toApiDate,
-} from "../utils/helpers";
-import { getStoredUser } from "../utils/auth";
+} from "../../utils/helpers";
+import { getStoredUser } from "../../utils/auth";
 
 function BookingForm() {
   const [date, setDate] = useState("");
@@ -87,7 +87,7 @@ function BookingForm() {
       try {
         const range = getDateRange(date, endDate || date);
         const responses = await Promise.all(
-          range.map((d) => bookingService.getAvailableTimes(toApiDate(d)))
+          range.map((d) => bookingService.getAvailableTimes(toApiDate(d), numHours))
         );
         const normalized = responses.map((r) => normalizeSlots(r.data));
         setSlotsByDay(normalized);

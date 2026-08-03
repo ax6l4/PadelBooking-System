@@ -166,10 +166,11 @@ function enrichPayment(p, store) {
   };
 }
 
-function getAvailableTimes(dateParam, store) {
+function getAvailableTimes(dateParam, store, hours = 1) {
   const dateStr = parseDateOnly(dateParam);
   const now = new Date();
   const todayStr = formatLocalDate(now);
+  const duration = Math.min(6, Math.max(1, parseInt(hours, 10) || 1));
 
   if (dateStr < todayStr) {
     throw new MockError("لا يمكن الحجز في تاريخ سابق");
@@ -204,8 +205,14 @@ function getAvailableTimes(dateParam, store) {
       }
     }
 
+    if (hour + duration > maxHour) {
+      slots.push({ startTime, endTime, available: false });
+      continue;
+    }
+
+    // يظهر الوقت فقط إذا وُجد ملعب واحد يغطي كامل مدة الحجز
     const available = activeCourts.some((c) =>
-      isCourtAvailable(c, dateStr, hour, hour + 1, store)
+      isCourtAvailable(c, dateStr, hour, hour + duration, store)
     );
     slots.push({ startTime, endTime, available });
   }
@@ -294,7 +301,8 @@ export async function mockRequest(config) {
   if (resource === "Booking") {
     if (method === "get" && idOrAction === "available") {
       const date = params.date;
-      return { data: getAvailableTimes(date, store) };
+      const hours = params.hours || 1;
+      return { data: getAvailableTimes(date, store, hours) };
     }
     if (method === "get") {
       return { data: filterBookings(store, params) };

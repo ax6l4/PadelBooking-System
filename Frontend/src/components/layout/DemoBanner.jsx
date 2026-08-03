@@ -1,4 +1,4 @@
-import { isDemoMode } from "../config/demo";
+import { isDemoMode } from "../../config/demo";
 
 function DemoBanner() {
   if (!isDemoMode) return null;

@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import DemoBanner from "./components/DemoBanner";
-import AdminRoute from "./components/AdminRoute";
+import { DemoBanner } from "./components/layout";
+import { AdminRoute } from "./components/auth";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";

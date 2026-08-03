@@ -7,11 +7,9 @@ export const bookingService = {
     return api.get("/Booking", { params: query });
   },
 
-  getAvailableTimes: (date) =>
+  getAvailableTimes: (date, hours = 1) =>
     api.get("/Booking/available", {
-      params: { date },
-      paramsSerializer: (params) =>
-        `date=${encodeURIComponent(params.date)}`,
+      params: { date, hours },
     }),
 
   create: (data) => api.post("/Booking", data),

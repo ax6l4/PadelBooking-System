@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PadelBooking.API.Data;
+using PadelBooking.API.DTOs;
 using PadelBooking.API.Models;
 
 namespace PadelBooking.API.Controllers;
@@ -16,8 +17,6 @@ public class UserController : ControllerBase
         _context = context;
     }
 
-
-
     // POST: api/User/register
     [HttpPost("register")]
     public async Task<IActionResult> Register(User user)
@@ -25,21 +24,14 @@ public class UserController : ControllerBase
         var exists = await _context.Users
             .AnyAsync(u => u.Email == user.Email);
 
-
         if (exists)
-        {
             return BadRequest("البريد مستخدم مسبقاً");
-        }
-
 
         user.Role = UserRole.Customer;
         user.CreatedAt = DateTime.UtcNow;
 
-
         _context.Users.Add(user);
-
         await _context.SaveChangesAsync();
-
 
         return Ok(new
         {
@@ -50,9 +42,6 @@ public class UserController : ControllerBase
             user.Role
         });
     }
-
-
-
 
     // POST: api/User/login
     [HttpPost("login")]
@@ -63,14 +52,8 @@ public class UserController : ControllerBase
                 u.Email == request.Email &&
                 u.Password == request.Password);
 
-
-
         if (user == null)
-        {
             return Unauthorized("البريد أو كلمة المرور غير صحيحة");
-        }
-
-
 
         return Ok(new
         {
@@ -82,24 +65,11 @@ public class UserController : ControllerBase
         });
     }
 
-
-
-
     // GET: api/User
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {
         var users = await _context.Users.ToListAsync();
-
         return Ok(users);
     }
-}
-
-
-
-public class LoginRequest
-{
-    public string Email { get; set; } = string.Empty;
-
-    public string Password { get; set; } = string.Empty;
 }

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import badelImage from "../assets/Badel.jpeg";
+import badelImage from "../../assets/images/Badel.jpeg";
 
 function Hero() {
   return (

@@ -97,17 +97,25 @@ The application consists of:
 BadelBooking/
 ├── Backend/
 │   └── PadelBooking.API/
-│       ├── Controllers/       # API endpoints
-│       ├── Models/            # Entity models and DTOs
-│       ├── Services/          # Booking logic, Thawani integration
-│       ├── Data/              # DbContext, database seeder
-│       └── Program.cs         # Application entry point
+│       ├── Controllers/     # نقاط الـ API
+│       ├── Models/          # كيانات قاعدة البيانات
+│       ├── DTOs/            # طلبات واستجابات الـ API
+│       ├── Services/        # منطق الحجز + Thawani
+│       ├── Data/            # DbContext + Seeder
+│       └── Program.cs
 ├── Frontend/
 │   └── src/
-│       ├── components/        # Navbar, Hero, BookingForm, Footer
-│       ├── pages/             # Home, Booking, Admin, Login, Payment
-│       ├── services/          # API service modules
-│       └── utils/             # Helpers and auth utilities
+│       ├── assets/images/   # الصور
+│       ├── components/
+│       │   ├── layout/      # Navbar, Footer, Hero, DemoBanner
+│       │   ├── booking/     # BookingForm, SuccessCard, CourtsBrowse
+│       │   └── auth/        # AdminRoute
+│       ├── pages/           # الصفحات (Home, Booking, Admin, Login…)
+│       ├── services/        # استدعاءات الـ API + Demo mock
+│       ├── styles/          # CSS الرئيسي
+│       ├── utils/           # helpers + constants + auth
+│       ├── config/          # إعدادات Demo Mode
+│       └── data/            # بيانات الـ Demo (localStorage)
 └── README.md
 ```
 

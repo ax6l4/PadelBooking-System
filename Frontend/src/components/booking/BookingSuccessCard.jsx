@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { formatDateDisplay, formatTimeDisplay } from "../utils/helpers";
+import { formatDateDisplay, formatTimeDisplay } from "../../utils/helpers";
 
 function getPaymentLabel(method) {
   if (method === "Thawani") return "الدفع الإلكتروني Thawani";

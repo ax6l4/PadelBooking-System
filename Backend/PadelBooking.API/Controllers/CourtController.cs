@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PadelBooking.API.Data;
+using PadelBooking.API.DTOs;
 using PadelBooking.API.Models;
 
 namespace PadelBooking.API.Controllers;
@@ -113,14 +114,4 @@ public class CourtController : ControllerBase
 
         return Ok("تم حذف الملعب");
     }
-}
-
-public class CourtRequest
-{
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public decimal PricePerHour { get; set; }
-    public string OpeningTime { get; set; } = "08:00:00";
-    public string ClosingTime { get; set; } = "23:00:00";
-    public bool IsActive { get; set; } = true;
 }

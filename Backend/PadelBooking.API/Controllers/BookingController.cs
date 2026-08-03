@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PadelBooking.API.Data;
+using PadelBooking.API.DTOs;
 using PadelBooking.API.Models;
 using PadelBooking.API.Services;
 
@@ -69,12 +70,15 @@ public class BookingController : ControllerBase
         return Ok(bookings);
     }
 
-    // GET: api/Booking/available?date=2026-09-10
+    // GET: api/Booking/available?date=2026-09-10&hours=2
     [HttpGet("available")]
-    public async Task<IActionResult> GetAvailableTimes(DateTime date)
+    public async Task<IActionResult> GetAvailableTimes(DateTime date, [FromQuery] int hours = 1)
     {
         if (date.Date < DateTime.Now.Date)
             return BadRequest("لا يمكن الحجز في تاريخ سابق");
+
+        if (hours < 1) hours = 1;
+        if (hours > 6) hours = 6;
 
         var courts = await _context.Courts.Where(c => c.IsActive).ToListAsync();
         var workingHours = await _context.CourtWorkingHours.ToListAsync();
@@ -98,19 +102,27 @@ public class BookingController : ControllerBase
         for (int hour = minHour; hour < maxHour; hour++)
         {
             var start = new TimeSpan(hour, 0, 0);
-            var end = new TimeSpan(hour + 1, 0, 0);
+            var end = new TimeSpan(hour + hours, 0, 0);
+            var displayEnd = new TimeSpan(hour + 1, 0, 0);
 
             if (date.Date == DateTime.Now.Date && start <= DateTime.Now.TimeOfDay)
             {
-                result.Add(new { startTime = start, endTime = end, available = false });
+                result.Add(new { startTime = start, endTime = displayEnd, available = false });
                 continue;
             }
 
+            if (hour + hours > maxHour)
+            {
+                result.Add(new { startTime = start, endTime = displayEnd, available = false });
+                continue;
+            }
+
+            // الوقت يظهر فقط إن وُجد ملعب واحد يغطي كامل المدة
             bool available = courts.Any(c =>
                 BookingHelper.IsCourtAvailableForSlot(
                     c, date, start, end, workingHours, closures, bookings));
 
-            result.Add(new { startTime = start, endTime = end, available });
+            result.Add(new { startTime = start, endTime = displayEnd, available });
         }
 
         return Ok(result);
