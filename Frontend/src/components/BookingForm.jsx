@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { bookingService } from "../services/bookingService";
 import { paymentService } from "../services/paymentService";
 import { courtService } from "../services/courtService";
+import BookingSuccessCard from "./BookingSuccessCard";
 import {
   addHoursToTime,
-  formatDateDisplay,
   formatTimeDisplay,
   getAvailableStartTimes,
   getDateRange,
@@ -117,6 +116,20 @@ function BookingForm() {
     if (paymentMethod === "Thawani" && paymentRes.data.checkoutUrl) {
       sessionStorage.setItem("pendingPaymentId", paymentRes.data.paymentId);
       sessionStorage.setItem("pendingBookingIds", JSON.stringify(bookingIds));
+      sessionStorage.setItem(
+        "pendingBookingSummary",
+        JSON.stringify({
+          bookingId: bookingRes.data.bookingId,
+          bookingIds,
+          bookingDate: bookingRes.data.bookingDate,
+          endDate: bookingRes.data.endDate,
+          startTime: bookingRes.data.startTime,
+          endTime: bookingRes.data.endTime,
+          totalHours: bookingRes.data.totalHours,
+          daysCount: bookingRes.data.daysCount,
+          paymentType: paymentMethod,
+        })
+      );
       window.location.href = paymentRes.data.checkoutUrl;
       return null;
     }
@@ -158,10 +171,6 @@ function BookingForm() {
       setConfirmation({
         ...bookingRes.data,
         paymentType: payment,
-        message:
-          payment === "PayAtVenue"
-            ? "تم تأكيد حجزك — الدفع عند الوصول"
-            : "تم إنشاء الحجز بنجاح",
       });
     } catch (err) {
       setError(getErrorMessage(err, "حدث خطأ أثناء الحجز"));
@@ -173,31 +182,7 @@ function BookingForm() {
   if (confirmation) {
     return (
       <div className="form-card">
-        <h2>تأكيد الحجز</h2>
-        <p className="form-alert form-alert-success">
-          {confirmation.message || "تم إنشاء الحجز بنجاح"}
-        </p>
-
-        <div className="confirmation-details">
-          <p><strong>رقم الحجز:</strong> {confirmation.bookingIds?.join(", ") || confirmation.bookingId}</p>
-          <p><strong>التاريخ:</strong> {formatDateDisplay(confirmation.bookingDate)}
-            {confirmation.daysCount > 1 && ` — ${formatDateDisplay(confirmation.endDate)}`}
-          </p>
-          <p><strong>الوقت:</strong> {formatTimeDisplay(confirmation.startTime)} - {formatTimeDisplay(confirmation.endTime)}</p>
-          <p><strong>عدد الساعات:</strong> {confirmation.totalHours}</p>
-          {confirmation.daysCount > 1 && <p><strong>عدد الأيام:</strong> {confirmation.daysCount}</p>}
-          <p><strong>المبلغ:</strong> {confirmation.totalPrice} ر.ع</p>
-        </div>
-
-        {confirmation.paymentType === "PayAtVenue" && (
-          <p className="form-desc" style={{ marginTop: "16px" }}>
-            تم تأكيد حجزك. يمكنك الدفع نقداً (Cash) عند الوصول.
-          </p>
-        )}
-
-        <Link to="/" className="btn btn-outline-dark btn-full" style={{ marginTop: "20px", borderRadius: "12px" }}>
-          العودة للرئيسية
-        </Link>
+        <BookingSuccessCard confirmation={confirmation} />
       </div>
     );
   }
