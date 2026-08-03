@@ -294,13 +294,18 @@ function BookingForm() {
         <div className="payment-options">
           <label className="payment-option">
             <input type="radio" name="payment" value="PayAtVenue" checked={payment === "PayAtVenue"} onChange={() => setPayment("PayAtVenue")} />
-            الدفع عند الوصول (Cash)
+            الدفع عند الوصول (نقداً)
           </label>
           <label className="payment-option">
             <input type="radio" name="payment" value="Thawani" checked={payment === "Thawani"} onChange={() => setPayment("Thawani")} />
-            الدفع الإلكتروني Thawani
+            الدفع الإلكتروني عبر ثواني (Thawani)
           </label>
         </div>
+        {payment === "Thawani" && (
+          <p className="form-desc" style={{ marginTop: 12, marginBottom: 0 }}>
+            سيتم تحويلك إلى بوابة ثواني الآمنة لإتمام الدفع. بيئة الاختبار (Sandbox) — لا يتم خصم مبلغ حقيقي.
+          </p>
+        )}
       </div>
 
       <button className="btn btn-primary btn-full" type="submit" disabled={submitting || !startTime}>

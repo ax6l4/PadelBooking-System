@@ -268,37 +268,45 @@ The system supports two payment methods:
 ### 1. Pay at Venue (Cash)
 
 - Selected during booking
-- Payment record created with status `Pending`
-- Automatically confirmed upon booking completion
-- Customer pays cash at the venue
+- Booking is confirmed immediately
+- Payment record stays `Pending` until paid at the venue
 
 ### 2. Thawani (Online — Sandbox)
 
-Integration follows the [Thawani E-Commerce API](https://thawani-technologies.stoplight.io/docs/thawani-ecommerce-api/5534c91789a48-thawani-e-commerce-api).
+Integration follows the official [Thawani E-Commerce API](https://thawani-technologies.stoplight.io/docs/thawani-ecommerce-api/5534c91789a48-thawani-e-commerce-api).
+
+**UAT (Sandbox) keys from Thawani docs** (already configured):
+
+| Key | Value |
+|-----|-------|
+| Secret Key | `rRQ26GcsZzoEhbrP2HZvLYDbn9C9et` |
+| Publishable Key | `HGvTMLDssJghr9tlN9gr4DVYt0qyBy` |
+| API Base | `https://uatcheckout.thawani.om/api/v1` |
+| Checkout | `https://uatcheckout.thawani.om/pay/{session_id}?key={publishable}` |
 
 **Flow:**
 
-1. Customer selects Thawani as payment method
-2. Backend creates a payment session via `POST /api/Payment`
-3. Customer is redirected to the Thawani checkout URL
-4. After payment, customer returns to `/payment/callback`
-5. Booking status is updated to `Confirmed`
+1. Customer selects **Thawani**
+2. Backend creates a checkout session (`POST /checkout/session`)
+3. Customer is redirected to Thawani UAT checkout
+4. After payment, Thawani redirects to `/payment/callback?paymentId=...`
+5. Backend verifies session status via `GET /checkout/session/{session_id}`
+6. On `paid`, booking is confirmed and payment marked `Paid`
 
-**Sandbox Configuration**
+**Demo mode (frontend only):** uses a local Sandbox page at `/payment/thawani-demo` instead of the real Thawani site.
 
-Edit `Backend/PadelBooking.API/appsettings.Development.json`:
+**Config file:** `Backend/PadelBooking.API/appsettings.json`
 
 ```json
 "Thawani": {
-  "SecretKey": "YOUR_SANDBOX_SECRET_KEY",
-  "PublishableKey": "YOUR_SANDBOX_PUBLISHABLE_KEY",
+  "SecretKey": "rRQ26GcsZzoEhbrP2HZvLYDbn9C9et",
+  "PublishableKey": "HGvTMLDssJghr9tlN9gr4DVYt0qyBy",
   "BaseUrl": "https://uatcheckout.thawani.om/api/v1",
-  "SuccessUrl": "http://localhost:5173/payment/callback",
-  "CancelUrl": "http://localhost:5173/booking"
+  "CheckoutHost": "https://uatcheckout.thawani.om"
 }
 ```
 
-> **Without API keys:** The system uses a mock redirect to the local callback page for development and testing.
+For **production** keys, replace the UAT values and set `BaseUrl` / `CheckoutHost` to `https://checkout.thawani.om`.
 
 ---
 
@@ -345,9 +353,10 @@ Full interactive documentation is available at **http://localhost:5104/swagger**
 
 ### Payment
 
-- Thawani integration requires valid sandbox API keys for real gateway testing.
-- Without keys, a **mock payment flow** redirects to the local callback page.
-- No server-side webhook from Thawani is implemented; confirmation relies on the callback page.
+- Thawani sandbox UAT keys are configured for testing; replace with merchant production keys for live payments.
+- Without keys, a local mock/demo checkout page is used.
+- Confirmation verifies Thawani session status before marking payment as paid.
+- Demo frontend mode uses `/payment/thawani-demo`; real UAT checkout requires the ASP.NET backend.
 
 ### Booking
 

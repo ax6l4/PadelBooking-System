@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Booking from "./pages/Booking";
 import AdminDashboard from "./pages/AdminDashboard";
 import PaymentCallback from "./pages/PaymentCallback";
+import ThawaniDemoCheckout from "./pages/ThawaniDemoCheckout";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/payment/thawani-demo" element={<ThawaniDemoCheckout />} />
         <Route path="/payment/callback" element={<PaymentCallback />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

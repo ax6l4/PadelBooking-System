@@ -463,7 +463,7 @@ export async function mockRequest(config) {
           paymentMethod: "Thawani",
           status: "Pending",
           sessionId: `demo-session-${paymentId}`,
-          checkoutUrl: `/payment/callback?paymentId=${paymentId}`,
+          checkoutUrl: `/payment/thawani-demo?paymentId=${paymentId}&amount=${amount}&session=demo-session-${paymentId}`,
           transactionId: null,
           createdAt: new Date().toISOString(),
         };
@@ -476,6 +476,7 @@ export async function mockRequest(config) {
             sessionId: payment.sessionId,
             checkoutUrl: payment.checkoutUrl,
             amount,
+            sandbox: true,
           },
         };
       }
