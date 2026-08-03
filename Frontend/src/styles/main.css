@@ -188,14 +188,6 @@ a {
   cursor: pointer;
 }
 
-.auth-subtitle small {
-  display: block;
-  margin-top: 8px;
-  font-size: 0.78rem;
-  opacity: 0.75;
-  line-height: 1.5;
-}
-
 /* ===== Hero ===== */
 .hero {
   position: relative;

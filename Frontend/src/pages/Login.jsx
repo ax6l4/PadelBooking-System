@@ -42,11 +42,6 @@ function Login() {
         </Link>
 
         <h1 className="auth-title">تسجيل الدخول</h1>
-        <p className="auth-subtitle">
-          مرحباً بعودتك! سجّل دخولك للمتابعة
-          <br />
-          <small>مدير: admin@padel.com / admin123 — عميل: customer@padel.com / 123456</small>
-        </p>
 
         {error && <p className="form-alert form-alert-error">{error}</p>}
 
