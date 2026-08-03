@@ -17,7 +17,6 @@ import {
   getTodayLocal,
   toApiDate,
 } from "../../utils/helpers";
-import { getStoredUser } from "../../utils/auth";
 
 function BookingForm() {
   const [date, setDate] = useState("");
@@ -48,11 +47,9 @@ function BookingForm() {
     setSubmitting(false);
     setError("");
     setFormResetKey((k) => k + 1);
-
-    const user = getStoredUser();
-    setPhone(user?.phone || "");
-    setName(user?.name || "");
-    setEmail(user?.email || "");
+    setPhone("");
+    setName("");
+    setEmail("");
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -77,15 +74,6 @@ function BookingForm() {
     () => selectableStarts.filter((s) => s.available),
     [selectableStarts]
   );
-
-  useEffect(() => {
-    const user = getStoredUser();
-    if (user) {
-      if (user.phone) setPhone(user.phone);
-      if (user.name) setName(user.name);
-      if (user.email) setEmail(user.email);
-    }
-  }, []);
 
   useEffect(() => {
     if (!date) {
@@ -313,17 +301,36 @@ function BookingForm() {
 
         <div className="form-field">
           <label htmlFor="phone">رقم الهاتف *</label>
-          <input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05xxxxxxxx" required />
+          <input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="أدخل رقم الهاتف"
+            required
+          />
         </div>
 
         <div className="form-field">
           <label htmlFor="name">الاسم (اختياري)</label>
-          <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم الكامل" />
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="أدخل الاسم"
+          />
         </div>
 
         <div className="form-field form-field-full">
           <label htmlFor="email">البريد الإلكتروني (اختياري)</label>
-          <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@email.com" />
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="أدخل البريد الإلكتروني"
+          />
         </div>
       </div>
 
