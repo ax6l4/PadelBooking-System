@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: padelbooking-api
+    runtime: docker
+    rootDir: Backend/PadelBooking.API
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/Court
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:$PORT
+      - key: UseHttpsRedirection
+        value: "false"
+      - key: FRONTEND_URL
+        sync: false

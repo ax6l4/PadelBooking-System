@@ -5,6 +5,15 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Cloud hosting (Render/Railway): bind to platform PORT
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+    builder.WebHost.UseUrls($"http://+:{port}");
+
+// Optional single FRONTEND_URL env var for CORS + Thawani callbacks
+var frontendUrl = builder.Configuration["FRONTEND_URL"]
+    ?? builder.Configuration["Frontend:BaseUrl"];
+
 
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -19,18 +28,21 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     });
 
-// CORS — allow configured frontend origins (demo: Vite dev + preview)
+// CORS — allow configured frontend origins (demo: Vite dev + preview + production)
 var allowedOrigins = builder.Configuration
     .GetSection("Frontend:AllowedOrigins")
-    .Get<string[]>() ?? Array.Empty<string>();
+    .Get<string[]>()?.ToList() ?? new List<string>();
+
+if (!string.IsNullOrWhiteSpace(frontendUrl) && !allowedOrigins.Contains(frontendUrl))
+    allowedOrigins.Add(frontendUrl);
 
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        if (allowedOrigins.Length > 0)
+        if (allowedOrigins.Count > 0)
         {
-            policy.WithOrigins(allowedOrigins)
+            policy.WithOrigins(allowedOrigins.ToArray())
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         }
